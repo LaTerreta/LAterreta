@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Semanales - La Terreta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lobster&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .lobster-font { font-family: 'Lobster', cursive; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .tab-active { 
+            border-color: #f59e0b; /* amber-500 */
+            background-color: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Contenedor Principal -->
+    <div class="container mx-auto p-4 max-w-4xl">
+
+        <!-- Cabecera -->
+        <header class="text-center mb-6">
+            <div class="flex justify-center items-center gap-4">
+                 <svg class="w-16 h-16 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-1.44m0 0c2.473.536 4.616 2.24 5.688 4.542 1.072 2.302 1.072 4.962 0 7.264-1.072 2.302-3.215 4.006-5.688 4.542m-2.148-.886A18.04 18.04 0 015.802 15.75a18.064 18.064 0 01-2.422-4.12A18.04 18.04 0 015.802 7.5a18.064 18.064 0 012.422-4.12m6.356 8.242A8.25 8.25 0 009 9.6a8.983 8.983 0 013.362-1.44m0 0A21.953 21.953 0 0112 2.25c2.584 0 5.035.782 7.07 2.142M12 21a21.953 21.953 0 00-7.07-2.142" />
+                </svg>
+                <h1 class="lobster-font text-5xl text-amber-600">La Terreta</h1>
+            </div>
+            <p class="text-xl mt-4 text-gray-600">Planifica tu menú semanal</p>
+        </header>
+
+        <!-- Controles de Semana y Día -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+            <div class="mb-4">
+                <label for="week-selector" class="block text-sm font-medium text-gray-700 mb-1">Elige la semana:</label>
+                <select id="week-selector" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+            </div>
+            <div id="daily-tabs" class="flex flex-wrap gap-2 border-b-2 border-gray-200 pb-2">
+                <!-- Pestañas de los días se insertarán aquí -->
+            </div>
+        </div>
+
+        <!-- Vista del Menú -->
+        <main id="menu-view">
+             <!-- Secciones del menú (Primeros, Segundos, Postres) se insertarán aquí -->
+        </main>
+
+        <!-- Vistas Modales (Carrito, Formulario, Confirmación) -->
+        <div id="cart-view" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center p-4 z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-lg fade-in">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold">Tu Pedido Semanal</h2>
+                        <button id="close-cart-btn" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                    </div>
+                    <div id="cart-items" class="space-y-4 mb-4 max-h-80 overflow-y-auto"></div>
+                    <div class="border-t pt-4">
+                        <button id="process-order-btn" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg mt-4 hover:bg-green-600 transition-colors">Hacer Pedido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="form-view" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center p-4 z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md fade-in">
+                <form id="order-form" class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">Casi listo...</h2>
+                         <button type="button" id="back-to-cart-btn" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                    </div>
+                    <div class="mb-4">
+                        <label for="customer-name" class="block text-sm font-medium text-gray-700 mb-1">Tu Nombre</label>
+                        <input type="text" id="customer-name" required class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <div class="mb-6">
+                        <label for="customer-phone" class="block text-sm font-medium text-gray-700 mb-1">Tu Teléfono (Opcional)</label>
+                        <input type="tel" id="customer-phone" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" placeholder="Te avisamos cuando esté listo">
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 text-white font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors">Confirmar Pedido</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="confirmation-view" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center p-4 z-50">
+            <div class="bg-white rounded-lg shadow-xl text-center p-8 w-full max-w-md fade-in">
+                <div class="mx-auto bg-green-100 rounded-full h-20 w-20 flex items-center justify-center">
+                   <svg class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h2 class="text-2xl font-bold mt-6">¡Pedido Recibido!</h2>
+                <p class="text-gray-600 mt-2">¡Gracias! Ya estamos preparando tu pedido.</p>
+                <p class="mt-4">Tu número de pedido es:</p>
+                <p id="order-number" class="text-4xl font-bold text-amber-600 mt-2"></p>
+                <button id="new-order-btn" class="w-full bg-amber-500 text-white font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors mt-8">Hacer otro pedido</button>
+            </div>
+        </div>
+
+        <!-- Botón Flotante del Carrito -->
+        <div id="cart-fab" class="fixed bottom-6 right-6 z-40">
+             <button id="open-cart-btn" class="bg-amber-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-amber-600 transition-transform hover:scale-110">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">0</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- DATOS DEL MENÚ SEMANAL ---
+        // Estructura: semana -> día -> 2 primeros, 2 segundos, 2 postres
+        const menuData = {
+            25: { // Semana 25 (ejemplo)
+                lunes: {
+                    primeros: [
+                        { id: 1, name: 'Ensalada César', img: 'https://placehold.co/600x400/F4A261/FFF?text=Ensalada+César' },
+                        { id: 14, name: 'Crema de Calabacín', img: 'https://placehold.co/600x400/84a98c/FFF?text=Crema' }
+                    ],
+                    segundos: [
+                        { id: 2, name: 'Pollo Asado', img: 'https://placehold.co/600x400/E76F51/FFF?text=Pollo+Asado' },
+                        { id: 15, name: 'Lentejas Estofadas', img: 'https://placehold.co/600x400/9e2a2b/FFF?text=Lentejas' }
+                    ],
+                    postres: [
+                        { id: 3, name: 'Fruta de Temporada', img: 'https://placehold.co/600x400/E9C46A/FFF?text=Fruta' },
+                        { id: 16, name: 'Tarta de Santiago', img: 'https://placehold.co/600x400/ffd670/FFF?text=Tarta' }
+                    ]
+                },
+                martes: {
+                    primeros: [
+                        { id: 4, name: 'Sopa de Pescado', img: 'https://placehold.co/600x400/2A9D8F/FFF?text=Sopa' },
+                        { id: 17, name: 'Revuelto de Champiñones', img: 'https://placehold.co/600x400/cad2c5/FFF?text=Revuelto' }
+                    ],
+                    segundos: [
+                        { id: 5, name: 'Lasaña de Carne', img: 'https://placehold.co/600x400/264653/FFF?text=Lasaña' },
+                        { id: 18, name: 'Pescado al Horno', img: 'https://placehold.co/600x400/457b9d/FFF?text=Pescado' }
+                    ],
+                    postres: [
+                        { id: 6, name: 'Yogur Griego', img: 'https://placehold.co/600x400/E9C46A/FFF?text=Yogur' },
+                        { id: 19, name: 'Mousse de Chocolate', img: 'https://placehold.co/600x400/582f0e/FFF?text=Mousse' }
+                    ]
+                },
+                miercoles: {
+                    primeros: [
+                        { id: 7, name: 'Gazpacho Andaluz', img: 'https://placehold.co/600x400/e63946/FFF?text=Gazpacho' },
+                        { id: 20, name: 'Ensaladilla Rusa', img: 'https://placehold.co/600x400/f1faee/333?text=Ensaladilla' }
+                    ],
+                    segundos: [
+                        { id: 8, name: 'Merluza a la Plancha', img: 'https://placehold.co/600x400/1d3557/FFF?text=Merluza' },
+                        { id: 21, name: 'Albóndigas en Salsa', img: 'https://placehold.co/600x400/a85151/FFF?text=Albóndigas' }
+                    ],
+                    postres: [
+                        { id: 3, name: 'Fruta de Temporada', img: 'https://placehold.co/600x400/E9C46A/FFF?text=Fruta' },
+                        { id: 22, name: 'Flan de Huevo', img: 'https://placehold.co/600x400/ffbe0b/333?text=Flan' }
+                    ]
+                },
+                jueves: {
+                    primeros: [
+                        { id: 9, name: 'Paella Valenciana', img: 'https://placehold.co/600x400/fca311/FFF?text=Paella' },
+                        { id: 23, name: 'Judías Verdes con Jamón', img: 'https://placehold.co/600x400/6a994e/FFF?text=Judías' }
+                    ],
+                    segundos: [
+                        { id: 10, name: 'Entrecot de Ternera', img: 'https://placehold.co/600x400/d62828/FFF?text=Entrecot' },
+                        { id: 24, name: 'Secreto Ibérico', img: 'https://placehold.co/600x400/bc4749/FFF?text=Secreto' }
+                    ],
+                    postres: [
+                        { id: 11, name: 'Tarta de Queso', img: 'https://placehold.co/600x400/E9C46A/FFF?text=Tarta+Queso' },
+                        { id: 25, name: 'Helado de Turrón', img: 'https://placehold.co/600x400/f0e68c/333?text=Helado' }
+                    ]
+                },
+                viernes: {
+                    primeros: [
+                        { id: 12, name: 'Macarrones con Tomate', img: 'https://placehold.co/600x400/fb8500/FFF?text=Macarrones' },
+                        { id: 26, name: 'Espinacas a la Crema', img: 'https://placehold.co/600x400/3a5a40/FFF?text=Espinacas' }
+                    ],
+                    segundos: [
+                        { id: 13, name: 'Salmón al Horno', img: 'https://placehold.co/600x400/023047/FFF?text=Salmón' },
+                        { id: 27, name: 'Huevos Rotos con Jamón', img: 'https://placehold.co/600x400/e07a5f/FFF?text=Huevos+Rotos' }
+                    ],
+                    postres: [
+                        { id: 6, name: 'Yogur Griego', img: 'https://placehold.co/600x400/E9C46A/FFF?text=Yogur' },
+                        { id: 28, name: 'Arroz con Leche', img: 'https://placehold.co/600x400/f2f2f2/333?text=Arroz+con+Leche' }
+                    ]
+                },
+            }
+        };
+        
+        // --- ESTADO DE LA APP ---
+        let cart = [];
+        let selectedWeek = getWeekNumber(new Date());
+        let selectedDay = 'lunes';
+
+        // --- REFERENCIAS AL DOM ---
+        const weekSelector = document.getElementById('week-selector');
+        const dailyTabsContainer = document.getElementById('daily-tabs');
+        const menuView = document.getElementById('menu-view');
+        const cartView = document.getElementById('cart-view');
+        const formView = document.getElementById('form-view');
+        const confirmationView = document.getElementById('confirmation-view');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartCountEl = document.getElementById('cart-count');
+
+        // --- FUNCIONES AUXILIARES ---
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
+
+        // --- FUNCIONES DE RENDERIZADO ---
+        function populateWeekSelector() {
+            for (let i = 1; i <= 52; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Semana ${i}`;
+                if (i === selectedWeek) {
+                    option.selected = true;
+                }
+                weekSelector.appendChild(option);
+            }
+        }
+
+        function renderDailyTabs() {
+            dailyTabsContainer.innerHTML = '';
+            const days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+            days.forEach(day => {
+                const tab = document.createElement('button');
+                tab.dataset.day = day;
+                tab.textContent = day.charAt(0).toUpperCase() + day.slice(1);
+                tab.className = `day-tab px-4 py-2 rounded-lg border-2 border-transparent text-sm font-semibold transition-colors`;
+                if (day === selectedDay) {
+                    tab.classList.add('tab-active');
+                } else {
+                    tab.classList.add('hover:bg-amber-100');
+                }
+                dailyTabsContainer.appendChild(tab);
+            });
+        }
+        
+        function renderMenu() {
+            menuView.innerHTML = '';
+            const weekMenu = menuData[selectedWeek];
+            const dayMenu = weekMenu ? weekMenu[selectedDay] : null;
+
+            if (!dayMenu) {
+                menuView.innerHTML = `<div class="text-center p-8 bg-white rounded-lg shadow-md"><p class="text-gray-500 text-xl">No hay menú disponible para este día.</p></div>`;
+                return;
+            }
+
+            const categoryTitles = { primeros: 'Primeros Platos', segundos: 'Segundos Platos', postres: 'Postres' };
+            for (const category in categoryTitles) {
+                if (dayMenu[category] && dayMenu[category].length > 0) {
+                    const section = document.createElement('section');
+                    section.className = 'mb-8 fade-in';
+                    const title = document.createElement('h2');
+                    title.className = 'text-3xl font-bold border-l-4 border-amber-500 pl-3 mb-4';
+                    title.textContent = categoryTitles[category];
+                    section.appendChild(title);
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+                    dayMenu[category].forEach(item => {
+                        grid.innerHTML += `
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+                                <img src="${item.img}" alt="${item.name}" class="w-full h-48 object-cover">
+                                <div class="p-4 flex flex-col flex-grow">
+                                    <h3 class="text-xl font-semibold mb-2">${item.name}</h3>
+                                    <div class="mt-auto pt-4">
+                                        <button data-id="${item.id}" class="add-to-cart-btn w-full bg-amber-500 text-white font-bold py-2 rounded-lg hover:bg-amber-600 transition-colors">Añadir</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    section.appendChild(grid);
+                    menuView.appendChild(section);
+                }
+            }
+        }
+
+        function updateCartView() {
+            cartItemsContainer.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-500">Tu carrito está vacío.</p>';
+            } else {
+                const groupedCart = cart.reduce((acc, item) => {
+                    const day = item.day;
+                    if (!acc[day]) acc[day] = [];
+                    acc[day].push(item);
+                    return acc;
+                }, {});
+
+                const sortedDays = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+                sortedDays.forEach(day => {
+                    if (groupedCart[day]) {
+                        const dayTitle = document.createElement('h3');
+                        dayTitle.className = 'font-bold text-lg border-b pb-1 mb-2 text-amber-600';
+                        dayTitle.textContent = day.charAt(0).toUpperCase() + day.slice(1) + ` (Semana ${groupedCart[day][0].week})`;
+                        cartItemsContainer.appendChild(dayTitle);
+
+                        groupedCart[day].forEach(item => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'flex justify-between items-center';
+                            itemDiv.innerHTML = `
+                                <div><p class="font-semibold">${item.name}</p></div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold">x ${item.quantity}</span>
+                                    <button data-id="${item.id}" data-day="${item.day}" class="remove-from-cart-btn text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
+                                </div>`;
+                            cartItemsContainer.appendChild(itemDiv);
+                        });
+                    }
+                });
+            }
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountEl.textContent = totalItems;
+            cartCountEl.classList.toggle('hidden', totalItems === 0);
+            document.getElementById('process-order-btn').disabled = cart.length === 0;
+        }
+
+        // --- LÓGICA DE LA APP ---
+        function addToCart(itemId) {
+            const allItems = [].concat(...Object.values(menuData[selectedWeek]?.[selectedDay] || {}));
+            const itemToAdd = allItems.find(item => item.id === itemId);
+
+            if (!itemToAdd) return;
+
+            const itemInCart = cart.find(item => item.id === itemId && item.day === selectedDay && item.week === selectedWeek);
+            if (itemInCart) {
+                itemInCart.quantity++;
+            } else {
+                cart.push({ ...itemToAdd, quantity: 1, day: selectedDay, week: selectedWeek });
+            }
+            updateCartView();
+        }
+
+        function removeFromCart(itemId, day) {
+            const itemIndex = cart.findIndex(item => item.id === itemId && item.day === day);
+            if (itemIndex > -1) {
+                cart[itemIndex].quantity--;
+                if (cart[itemIndex].quantity === 0) {
+                    cart.splice(itemIndex, 1);
+                }
+            }
+            updateCartView();
+        }
+
+        function generateOrderNumber() { return Math.floor(1000 + Math.random() * 9000); }
+        function resetApp() {
+            cart = [];
+            document.getElementById('order-form').reset();
+            updateCartView();
+            showView('menu-view');
+        }
+
+        function showView(viewId) {
+            [cartView, formView, confirmationView].forEach(v => v.classList.add('hidden'));
+            if (viewId !== 'menu-view') document.getElementById(viewId).classList.remove('hidden');
+        }
+        
+        function updateAppView() {
+            renderDailyTabs();
+            renderMenu();
+        }
+
+        // --- EVENT LISTENERS ---
+        weekSelector.addEventListener('change', (e) => {
+            selectedWeek = parseInt(e.target.value);
+            selectedDay = 'lunes'; // Reset to Monday when week changes
+            updateAppView();
+        });
+
+        dailyTabsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('day-tab')) {
+                selectedDay = e.target.dataset.day;
+                updateAppView();
+            }
+        });
+
+        menuView.addEventListener('click', e => {
+            if (e.target.classList.contains('add-to-cart-btn')) {
+                addToCart(parseInt(e.target.dataset.id));
+            }
+        });
+        
+        cartItemsContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-from-cart-btn')) {
+                removeFromCart(parseInt(e.target.dataset.id), e.target.dataset.day);
+            }
+        });
+
+        document.getElementById('open-cart-btn').addEventListener('click', () => { updateCartView(); showView('cart-view'); });
+        document.getElementById('close-cart-btn').addEventListener('click', () => showView('menu-view'));
+        document.getElementById('process-order-btn').addEventListener('click', () => { if (cart.length > 0) showView('form-view'); });
+        document.getElementById('back-to-cart-btn').addEventListener('click', () => showView('cart-view'));
+
+        document.getElementById('order-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('customer-name').value;
+            const phone = document.getElementById('customer-phone').value;
+            const orderNumber = generateOrderNumber();
+            document.getElementById('order-number').textContent = `#${orderNumber}`;
+            
+            console.log('--- NUEVO PEDIDO SEMANAL ---');
+            console.log('Pedido:', orderNumber, 'Cliente:', name, 'Teléfono:', phone);
+            console.log('Artículos:', cart);
+            
+            showView('confirmation-view');
+        });
+
+        document.getElementById('new-order-btn').addEventListener('click', resetApp);
+        
+        // --- INICIALIZACIÓN ---
+        populateWeekSelector();
+        updateAppView();
+        updateCartView();
+    });
+    </script>
+</body>
+</html>
